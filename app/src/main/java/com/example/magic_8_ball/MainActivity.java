@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -47,13 +49,26 @@ public class MainActivity extends AppCompatActivity {
         list.add("My sources say no.");
         list.add("Outlook not so good.");
         list.add("Very doubtful.");
+
     }
 
     public void ask(View view) {
-        answerTv.setText(null);
+        Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_out);
+        Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_in);
+       // answerTv.startAnimation(animFadeOut);
         int a;
         Random r = new Random();
         a = r.nextInt((19) + 1);
         answerTv.setText(list.get(a));
+        answerTv.startAnimation(animFadeIn);
+    }
+
+    public void reset(View view) {
+        Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_out);
+        Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_in);
+      //  answerTv.startAnimation(animFadeOut);
+        answerTv.setText("Magic 8 Ball");
+        answerTv.startAnimation(animFadeIn);
+
     }
 }
