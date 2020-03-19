@@ -2,19 +2,30 @@ package com.example.magic_8_ball;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
+    private SensorManager sensorManager;
+    private float accel;
+    private float accelCurrent;
+    private float accelLast;
 
     TextView answerTv;
     Button askBtn;
@@ -50,10 +61,57 @@ public class MainActivity extends AppCompatActivity {
         list.add("Outlook not so good.");
         list.add("Very doubtful.");
 
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        Objects.requireNonNull(sensorManager).registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_GAME);
+        accel = 10f;
+        accelCurrent = SensorManager.GRAVITY_EARTH;
+        accelLast = SensorManager.GRAVITY_EARTH;
+
+        Toast.makeText(getApplicationContext(), "Shake the device or click 'ASK!'", Toast.LENGTH_SHORT).show();
+
+
+    }
+
+    private final SensorEventListener sensorListener = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+            accelLast = accelCurrent;
+            accelCurrent = (float) Math.sqrt((double) (x * x + y * y + z * z));
+            float delta = accelCurrent - accelLast;
+            accel = accel * 0.9f + delta;
+            if (accel > 12) {
+                Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_in);
+                // answerTv.startAnimation(animFadeOut);
+                int a;
+                Random r = new Random();
+                a = r.nextInt((19) + 1);
+                answerTv.setText(list.get(a));
+                answerTv.startAnimation(animFadeIn);
+            }
+        }
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+    };
+
+    @Override
+    protected void onResume() {
+        sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        super.onResume();
+    }
+    @Override
+    protected void onPause() {
+        sensorManager.unregisterListener(sensorListener);
+        super.onPause();
     }
 
     public void ask(View view) {
-        Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_out);
+       // Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_out);
         Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_in);
        // answerTv.startAnimation(animFadeOut);
         int a;
@@ -64,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void reset(View view) {
-        Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_out);
+      //  Animation animFadeOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_out);
         Animation animFadeIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fade_in);
       //  answerTv.startAnimation(animFadeOut);
         answerTv.setText("Magic 8 Ball");
